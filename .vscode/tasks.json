@@ -15,7 +15,7 @@
                 "Comun\\*.c",
                 "-LC:\\mingw64\\opt\\lib",
                 "-lncursesw",
-                "Ventanas\\*.o",
+                //"Ventanas\\*.o",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
