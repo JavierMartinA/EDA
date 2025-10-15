@@ -26,6 +26,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     long final;
     int tim;
 
+    char scan[200];
     char obra[50];
     char apellidos[50];
     char nombre[50];
@@ -34,17 +35,24 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     char duracion[50];
 
     int contador;
+    int contador = 0;
+    int numValor;
+    int descartes = 0;
+    int tratados = 0;
 
 
     // Código del alumno
     if (!sumar) //No debería haber discos
     {
         if (Estadisticas.NumeroFichas == '0') //Comprobación de 0 discos
+        if (Estadisticas.NumeroFichas == 0) //Comprobación de 0 discos
+
         {
             touchwin(Wfichero);
             wrefresh(Wfichero);
 
             wscanw(Wfichero,"%s",&nombreFicheros);
+            mvwscanw(Wfichero, 3, 20,"%s",&nombreFicheros);
 
             fopen(nombreFicheros, "r"); //Cabecera en línea 0
 
@@ -63,6 +71,58 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 contador++;
 
             }
+            Fichas = realloc(Fichas, (contador + 1) * sizeof(DISCO *));
+            fscanf(punteroFichero, "%s"); //Para quitar header
+
+            while (fscanf(punteroFichero, "%s", &scan) != NULL) //Para leer todas las líneas
+            {
+                Fichas[contador] = malloc(sizeof(DISCO));
+                contador++;
+
+                while(scan != NULL) //Para leer cada valor de cada línea
+                {
+                    char * punteroScan = scan;
+                    char * valor;
+                    char *valores[6];
+
+                    while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
+                    {
+                        valores[numValor] = valor; //Guardar valor en el array
+                        numValor++; //Siguiente espacio en el array
+                    }
+
+                    if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están descarto la ficha
+                    {
+                        descartes++;
+                        return;
+                    }
+
+                    Fichas[contador]->Obra = valores[0];
+                    Fichas[contador]->ApellAutor = valores[1];
+                    Fichas[contador]->NomAutor = valores[2];
+                    Fichas[contador]->Tonalidad = valores[3];
+                    Fichas[contador]->Opus = valores[4];
+                    Fichas[contador]->Duracion = valores[5];
+
+                    
+                    
+
+
+                    
+                }
+
+
+
+                
+            }
+
+            if (contador == 0)
+            {
+                VentanaError("No contiene discos");
+                return;
+            }
+
+
             
 
 
