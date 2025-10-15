@@ -15,10 +15,32 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
 {
     
     // Código del alumno
+    char Tecla;
 
     if(*Fichas == NULL)
     {
         VentanaError("No hay fichas de disco para descartar");
+    }else
+    {
+        Tecla=VentanaSN("Esta seguro de querer eliminar los discos? (S/N)?");
+        if (Tecla == 'S' || Tecla == 's') 
+        {
+            for (int j = 0; j < Estadisticas.NumeroFichas; j++)
+            {
+                free((*Fichas)[j].Obra);
+                free((*Fichas)[j].ApellAutor);
+                free((*Fichas)[j].NomAutor);
+                free((*Fichas)[j].Tonalidad);
+                free((*Fichas)[j].Opus);
+                free((*Fichas)[j].Duracion);
+            }
+            Estadisticas.NumeroFichas = 0;    
+            free(*Fichas);
+            *Fichas = NULL;
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
+            VentanaError("La eliminación se llevo acabo correctamente");
+        }
     }
     
 }
