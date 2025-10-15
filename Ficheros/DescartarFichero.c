@@ -15,5 +15,10 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
 {
     
     // Código del alumno
+
+    if(*Fichas == NULL)
+    {
+        VentanaError("No hay fichas de disco para descartar");
+    }
     
 }
