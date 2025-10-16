@@ -34,7 +34,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     char opus[50];
     char duracion[50];
 
-    int contador;
     int contador = 0;
     int numValor;
     int descartes = 0;
