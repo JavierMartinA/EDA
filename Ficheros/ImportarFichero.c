@@ -43,9 +43,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     // Código del alumno
     if (!sumar) //No debería haber discos
     {
-        if (Estadisticas.NumeroFichas == '0') //Comprobación de 0 discos
         if (Estadisticas.NumeroFichas == 0) //Comprobación de 0 discos
-
         {
             touchwin(Wfichero);
             wrefresh(Wfichero);
