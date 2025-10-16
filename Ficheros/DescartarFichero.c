@@ -37,8 +37,6 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
             Estadisticas.NumeroFichas = 0;    
             free(*Fichas);
             *Fichas = NULL;
-            touchwin(Wfichero);
-            wrefresh(Wfichero);
             VentanaError("La eliminacion se llevo acabo correctamente");
         }
     }
