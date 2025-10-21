@@ -37,6 +37,7 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
             Estadisticas.NumeroFichas = 0;    
             free(*Fichas);
             *Fichas = NULL;
+            Estadisticas.MaxFichas = 0;
             VentanaError("La eliminacion se llevo acabo correctamente");
         }
     }
