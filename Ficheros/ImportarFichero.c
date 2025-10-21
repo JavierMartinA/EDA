@@ -171,34 +171,32 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                     return;
                 }
 
-                while(scan != NULL) //Para leer cada valor de cada línea
+            
+                char * punteroScan = scan;
+                char * valor;
+                char **valores;
+
+                while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
                 {
-                    char * punteroScan = scan;
-                    char * valor;
-                    char *valores;
-
-                    while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
-                    {
-                        valores[numValor] = valor; //Guardar valor en el array
-                        numValor++; //Siguiente espacio en el array
-                    }
-
-                    if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
-                    {
-                        descartes++;
-                        break; //No dejo que guarde los valores en la estructura
-                    }
-
-                    *Fichas[contador + Estadisticas.NumeroFichas]->Obra = valores[0];
-                    *Fichas[contador + Estadisticas.NumeroFichas]->ApellAutor = valores[1];
-                    *Fichas[contador + Estadisticas.NumeroFichas]->NomAutor = valores[2];
-                    *Fichas[contador + Estadisticas.NumeroFichas]->Tonalidad = valores[3];
-                    *Fichas[contador + Estadisticas.NumeroFichas]->Opus = valores[4];
-                    *Fichas[contador + Estadisticas.NumeroFichas]->Duracion = valores[5];
-
-                    tratados++;
-                    contador++; //Contador de discos en el fichero
+                    valores[numValor] = valor; //Guardar valor en el array
+                    numValor++; //Siguiente espacio en el array
                 }
+
+                if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
+                {
+                    descartes++;
+                    break; //No dejo que guarde los valores en la estructura
+                }
+
+                *Fichas[contador + Estadisticas.NumeroFichas]->Obra = valores[0];
+                *Fichas[contador + Estadisticas.NumeroFichas]->ApellAutor = valores[1];
+                *Fichas[contador + Estadisticas.NumeroFichas]->NomAutor = valores[2];
+                *Fichas[contador + Estadisticas.NumeroFichas]->Tonalidad = valores[3];
+                *Fichas[contador + Estadisticas.NumeroFichas]->Opus = valores[4];
+                *Fichas[contador + Estadisticas.NumeroFichas]->Duracion = valores[5];
+
+                tratados++;
+                contador++; //Contador de discos en el fichero
 
             
 
