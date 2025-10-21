@@ -15,16 +15,15 @@
 
 void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 {
-   
-    #include "Ficheros.h"
+    // Código del alumno
 
-    char nombreFicheros[50];
+    char nombreFicheros[250];
 
-    FILE *punteroFichero;
+    FILE *punteroFichero; //Declaro puntero tipo FILE para cuando abra el fichero
 
     long inicio;
     long final;
-    int tim;
+    long tim;
 
     char scan[200];
     char obra[50];
@@ -39,8 +38,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     int descartes = 0;
     int tratados = 0;
 
-
-    // Código del alumno
     if (!sumar) //No debería haber discos
     {
         if (Estadisticas.NumeroFichas == 0) //Comprobación de 0 discos
@@ -48,10 +45,10 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             touchwin(Wfichero);
             wrefresh(Wfichero);
 
-            wscanw(Wfichero,"%s",&nombreFicheros);
-            mvwscanw(Wfichero, 3, 20,"%s",&nombreFicheros);
+            wscanw(Wfichero,"%s",nombreFicheros);
+            mvwscanw(Wfichero, 3, 20,"%s",nombreFicheros);
 
-            fopen(nombreFicheros, "r"); //Cabecera en línea 0
+            punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
 
             if (punteroFichero == NULL)
             {
@@ -61,71 +58,68 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             
             inicio = clock();
-            fscanf(punteroFichero, "%s; %s; %s;%s;%s;%s"); //Para quitar header
 
-            while (fscanf(punteroFichero, "%s; %s; %s;%s;%s;%s"), &obra, &apellidos, &nombre, &tonalidad, &opus, &duracion)
-            {
-                contador++;
-
-            }
-            Fichas = realloc(Fichas, (contador + 1) * sizeof(DISCO *));
             fscanf(punteroFichero, "%s"); //Para quitar header
 
             while (fscanf(punteroFichero, "%s", &scan) != NULL) //Para leer todas las líneas
             {
-                Fichas[contador] = malloc(sizeof(DISCO));
-                contador++;
-
-                while(scan != NULL) //Para leer cada valor de cada línea
+                //Pongo la suma del contador al final para facilitar el número de discos tratados y el acceso al array
+                *Fichas = realloc(*Fichas, (contador+1) * sizeof(DISCO *)); //Pido memoria para el array de discos
+                if (*Fichas == NULL)
                 {
-                    char * punteroScan = scan;
-                    char * valor;
-                    char *valores[6];
-
-                    while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
-                    {
-                        valores[numValor] = valor; //Guardar valor en el array
-                        numValor++; //Siguiente espacio en el array
-                    }
-
-                    if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están descarto la ficha
-                    {
-                        descartes++;
-                        return;
-                    }
-
-                    Fichas[contador]->Obra = valores[0];
-                    Fichas[contador]->ApellAutor = valores[1];
-                    Fichas[contador]->NomAutor = valores[2];
-                    Fichas[contador]->Tonalidad = valores[3];
-                    Fichas[contador]->Opus = valores[4];
-                    Fichas[contador]->Duracion = valores[5];
-
-                    
-                    
-
-
-                    
+                    VentanaError("No se ha encontrado espacio para el bloque de discos"); //Compruebo que se me haya dado espacio
+                    return;
+                }
+                Fichas[contador] = malloc(sizeof(DISCO)); //Pido memoria en cada una de las celdas del (array) Fichas para contener los valores de la estructura disco
+                if (Fichas[contador] == NULL)
+                {
+                    VentanaError("No hay espacio para guardar el disco");
+                    return;
                 }
 
+                //Leo cada valor de cada línea
+                char *punteroScan = scan;
+                char *valor;
+                char **valores;
 
+                while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    valores[numValor] = *valor; //Guardar valor en el array
+                    numValor++; //Siguiente espacio en el array
+                }
 
-                
+                if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
+                {
+                    descartes++;
+                    break; //No dejo que guarde los valores en la estructura
+                }
+
+                Fichas[contador]->Obra = valores[0];
+                Fichas[contador]->ApellAutor = valores[1];
+                Fichas[contador]->NomAutor = valores[2];
+                Fichas[contador]->Tonalidad = valores[3];
+                Fichas[contador]->Opus = valores[4];
+                Fichas[contador]->Duracion = valores[5];
+
+                tratados++;
+                contador++; //Contador de discos en el fichero
+
             }
+
+            //mvwprint(Wfichero, x, y, "Ficheros tratados: %d", tratados);
+            //mvwprint(Wfichero, x, y, "Ficheros descartados: %d", descartes);
+
+
+            fclose (punteroFichero); //Cierro el fichero
+            final = clock();
+            tim = gettimeofday(inicio, final);
+
 
             if (contador == 0)
             {
-                VentanaError("No contiene discos");
+                VentanaError("El fichero solo tiene cabecera");
                 return;
             }
-
-
-            
-
-
-            
-
-
         }
 
         else
@@ -137,17 +131,108 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
         
     }
 
-    else
+    else //Para añadir las fichas de un fichero a la lista de discos existentes
     {
         if(Estadisticas.NumeroFichas > 0 || Estadisticas.NumeroFichas < 0) //Comprobación de que hay discos
         {
+        
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
 
+            wscanw(Wfichero,"%s",&nombreFicheros);
+            mvwscanw(Wfichero, 3, 20,"%s",&nombreFicheros);
+
+            punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
+
+            if (punteroFichero == NULL)
+            {
+                VentanaError("No se ha encontrado el fichero");
+                return;
+            }
+
+            
+            inicio = clock();
+
+            fscanf(punteroFichero, "%s"); //Para quitar header
+
+            while (fscanf(punteroFichero, "%s", &scan) != NULL) //Para leer todas las líneas
+            {
+                //Pongo la suma del contador al final para facilitar el número de discos tratados y el acceso al array
+                *Fichas = realloc(*Fichas, ((contador+1)+Estadisticas.NumeroFichas) * sizeof(DISCO *)); //Pido memoria para el array de discos
+                if (*Fichas == NULL)
+                {
+                    VentanaError("No se ha encontrado espacio para el bloque de discos"); //Compruebo que se me haya dado espacio
+                    return;
+                }
+                Fichas[contador + Estadisticas.NumeroFichas] = malloc(sizeof(DISCO)); //Pido memoria en cada una de las celdas del (array) Fichas para contener los valores de la estructura disco
+                if (Fichas[contador + Estadisticas.NumeroFichas] == NULL)
+                {
+                    VentanaError("No hay espacio para guardar el disco");
+                    return;
+                }
+
+                while(scan != NULL) //Para leer cada valor de cada línea
+                {
+                    char * punteroScan = scan;
+                    char * valor;
+                    char *valores;
+
+                    while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
+                    {
+                        valores[numValor] = valor; //Guardar valor en el array
+                        numValor++; //Siguiente espacio en el array
+                    }
+
+                    if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
+                    {
+                        descartes++;
+                        break; //No dejo que guarde los valores en la estructura
+                    }
+
+                    *Fichas[contador + Estadisticas.NumeroFichas]->Obra = valores[0];
+                    *Fichas[contador + Estadisticas.NumeroFichas]->ApellAutor = valores[1];
+                    *Fichas[contador + Estadisticas.NumeroFichas]->NomAutor = valores[2];
+                    *Fichas[contador + Estadisticas.NumeroFichas]->Tonalidad = valores[3];
+                    *Fichas[contador + Estadisticas.NumeroFichas]->Opus = valores[4];
+                    *Fichas[contador + Estadisticas.NumeroFichas]->Duracion = valores[5];
+
+                    tratados++;
+                    contador++; //Contador de discos en el fichero
+                }
+
+            
+
+                //mvwprint(Wfichero, x, y, "Ficheros tratados: %d", tratados);
+                //mvwprint(Wfichero, x, y, "Ficheros descartados: %d", descartes);
+
+
+                fclose (punteroFichero); //Cierro el fichero
+                final = clock();
+                tim = gettimeofday(inicio, final);
+
+
+                if (contador == 0)
+                {
+                    VentanaError("El fichero solo tiene cabecera");
+                    return;
+                }
+            }
         }
 
         else
         {
             VentanaError("No hay fichas de discos");
+            return;
         }
     }
+
+    
+    //Actualizar datos de Estadísticas
+    Estadisticas.Fichero = nombreFicheros;
+    Estadisticas.MaxFichas = Estadisticas.MaxFichas + tratados + descartes;
+    Estadisticas.NumeroFichas = Estadisticas.NumeroFichas + tratados;
+    Estadisticas.TiempoCarga = tim;
+
+    return;
 
 }

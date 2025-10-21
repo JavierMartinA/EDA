@@ -20,7 +20,8 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
     if(*Fichas == NULL)
     {
         VentanaError("No hay fichas de disco para descartar");
-    }else
+    }
+    else
     {
         Tecla=VentanaSN("Esta seguro de querer eliminar los discos? (S/N)?");
         if (Tecla == 'S' || Tecla == 's') 
