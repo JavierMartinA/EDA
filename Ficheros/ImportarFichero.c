@@ -26,7 +26,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     long final;
     long tim;
 
-    char *scan;
+    char scan[256];
     char obra[50];
     char apellidos[50];
     char nombre[50];
@@ -96,37 +96,70 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             }
             */
-
+            
+            
             //Leo cada valor de cada línea
-            char *punteroScan = &scan;
-            char *valor;
-            char **valores;
 
             //Pillar en el token los valores, valor 
-
-            if ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
+            while (fgets(scan, TAM_LINEA, punteroFichero) != NULL)
             {
-                (*Fichas)[contador].Obra = valor;
-            }
+                *Fichas = realloc(*Fichas, (contador+1) * sizeof(DISCO )); 
+                if (*Fichas == NULL)
+                {
+                    VentanaError("No se ha encontrado espacio para el bloque de discos"); //Compruebo que se me haya dado espacio
+                    fclose(punteroFichero);
+                    return;
+                }
+                /*Fichas[contador] = malloc(sizeof(DISCO)); //Pido memoria en cada una de las celdas del (array) Fichas para contener los valores de la estructura disco
+                if (Fichas[contador] == NULL)
+                {
+                    VentanaError("No hay espacio para guardar el disco");
+                    return;
+                }
+                */
 
-            if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
-            {
-                descartes++;
-            }
-
-            else
-            {
-                (*Fichas)[contador].Obra = valores[0];
-                *Fichas[contador]->ApellAutor = valores[1];
-                *Fichas[contador]->NomAutor = valores[2];
-                *Fichas[contador]->Tonalidad = valores[3];
-                *Fichas[contador]->Opus = valores[4];
-                *Fichas[contador]->Duracion = valores[5];
-
-                tratados++;
-                contador++; //Contador de discos en el fichero
-            }
+                char *punteroScan = scan;
+                char *valor;
+                
             
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].Obra = strdup(valor);
+                }
+
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].ApellAutor = strdup(valor);
+                }
+
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].NomAutor = strdup(valor);
+                }
+
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].Tonalidad = strdup(valor);
+                }
+
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].Opus = strdup(valor);
+                }
+
+                if ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+                {
+                    (*Fichas)[contador].Duracion = strdup(valor);
+                }
+
+                if (((*Fichas)[contador].Obra) == NULL || ((*Fichas)[contador].ApellAutor) == NULL) //Si obra o apellidos no están, descarto la ficha
+                {
+                    descartes++;
+                    
+                }
+
+                contador++;
+            }    
 
             //mvwprint(Wfichero, x, y, "Ficheros tratados: %d", tratados);
             //mvwprint(Wfichero, x, y, "Ficheros descartados: %d", descartes);
