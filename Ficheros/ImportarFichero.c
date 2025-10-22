@@ -15,8 +15,9 @@
 
 void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 {
-    // Código del alumno
+    #define TAM_LINEA 100
 
+    // Código del alumno
     char nombreFicheros[250];
 
     FILE *punteroFichero; //Declaro puntero tipo FILE para cuando abra el fichero
@@ -25,7 +26,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     long final;
     long tim;
 
-    char scan[200];
+    char *scan;
     char obra[50];
     char apellidos[50];
     char nombre[50];
@@ -45,8 +46,12 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             touchwin(Wfichero);
             wrefresh(Wfichero);
 
-            wscanw(Wfichero,"%s",nombreFicheros);
-            mvwscanw(Wfichero, 3, 20,"%s",nombreFicheros);
+            wattroff(Wfichero, A_ALTCHARSET);
+            echo();
+            mvwgetnstr(Wfichero,2,25,nombreFicheros, 250);
+            noecho();
+            wattron(Wfichero, A_ALTCHARSET);
+
 
             punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
 
@@ -57,11 +62,23 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }
 
             
-            inicio = clock();
+            //inicio = clock();
 
-            fscanf(punteroFichero, "%s"); //Para quitar header
+            
+           
+            fgets(scan, 256, punteroFichero); //Para quitar header
+            
 
-            while (fscanf(punteroFichero, "%s", &scan) != NULL) //Para leer todas las líneas
+            /*for (int i = 0; fgets(scan, 256, punteroFichero) !=NULL; i++)
+            {
+                contador++;
+            }
+                */
+
+           
+            
+            /*
+            while (fgets(scan, TAM_LINEA, punteroFichero) != NULL) //Para leer todas las líneas
             {
                 //Pongo la suma del contador al final para facilitar el número de discos tratados y el acceso al array
                 *Fichas = realloc(*Fichas, (contador+1) * sizeof(DISCO *)); //Pido memoria para el array de discos
@@ -77,34 +94,49 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                     return;
                 }
 
-                //Leo cada valor de cada línea
-                char *punteroScan = scan;
-                char *valor;
-                char **valores;
+            }
+            */
 
-                while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
+            //Leo cada valor de cada línea
+            char *punteroScan = scan;
+            char *valor;
+            char **valores;
+
+            //Pillar en el token los valores, valor está bien
+
+            /*while ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+            {
+                valores[numValor] = *valor; //Guardar valor en el array
+                numValor++; //Siguiente espacio en el array
+            }*/
+             while (fgets(scan, TAM_LINEA, punteroFichero) != NULL) //Para leer todas las líneas
+            {
+                if (valor = strsep(&punteroScan, ";") != NULL)
                 {
-                    valores[numValor] = *valor; //Guardar valor en el array
-                    numValor++; //Siguiente espacio en el array
+                    (*Fichas)[contador].Obra = valor;
                 }
 
                 if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
                 {
                     descartes++;
-                    break; //No dejo que guarde los valores en la estructura
                 }
+            }
 
-                Fichas[contador]->Obra = valores[0];
-                Fichas[contador]->ApellAutor = valores[1];
-                Fichas[contador]->NomAutor = valores[2];
-                Fichas[contador]->Tonalidad = valores[3];
-                Fichas[contador]->Opus = valores[4];
-                Fichas[contador]->Duracion = valores[5];
+           /*
+            {
+                (*Fichas)[contador].Obra = valores[0];
+                *Fichas[contador]->ApellAutor = valores[1];
+                *Fichas[contador]->NomAutor = valores[2];
+                *Fichas[contador]->Tonalidad = valores[3];
+                *Fichas[contador]->Opus = valores[4];
+                *Fichas[contador]->Duracion = valores[5];
 
                 tratados++;
                 contador++; //Contador de discos en el fichero
-
             }
+
+            */
+            
 
             //mvwprint(Wfichero, x, y, "Ficheros tratados: %d", tratados);
             //mvwprint(Wfichero, x, y, "Ficheros descartados: %d", descartes);
@@ -112,7 +144,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             fclose (punteroFichero); //Cierro el fichero
             final = clock();
-            tim = gettimeofday(inicio, final);
+            //tim = gettimeofday(inicio, final);
 
 
             if (contador == 0)
