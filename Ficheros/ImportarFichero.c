@@ -98,31 +98,23 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             */
 
             //Leo cada valor de cada línea
-            char *punteroScan = scan;
+            char *punteroScan = &scan;
             char *valor;
             char **valores;
 
-            //Pillar en el token los valores, valor está bien
+            //Pillar en el token los valores, valor 
 
-            /*while ((valor = strsep(&punteroScan, ";")) != NULL) //Guardar todos los valores
+            if ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
             {
-                valores[numValor] = *valor; //Guardar valor en el array
-                numValor++; //Siguiente espacio en el array
-            }*/
-             while (fgets(scan, TAM_LINEA, punteroFichero) != NULL) //Para leer todas las líneas
-            {
-                if (valor = strsep(&punteroScan, ";") != NULL)
-                {
-                    (*Fichas)[contador].Obra = valor;
-                }
-
-                if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
-                {
-                    descartes++;
-                }
+                (*Fichas)[contador].Obra = valor;
             }
 
-           /*
+            if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están, descarto la ficha
+            {
+                descartes++;
+            }
+
+            else
             {
                 (*Fichas)[contador].Obra = valores[0];
                 *Fichas[contador]->ApellAutor = valores[1];
@@ -134,8 +126,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 tratados++;
                 contador++; //Contador de discos en el fichero
             }
-
-            */
             
 
             //mvwprint(Wfichero, x, y, "Ficheros tratados: %d", tratados);
