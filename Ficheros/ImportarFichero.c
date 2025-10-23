@@ -22,9 +22,9 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
     FILE *punteroFichero; //Declaro puntero tipo FILE para cuando abra el fichero
 
-    long inicio;
-    long final;
-    long tim;
+    struct timeval inicio;
+    struct timeval final;
+    
 
     char scan[256];
 
@@ -70,7 +70,8 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
             strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
             
-            //inicio = clock();
+            gettimeofday(&inicio, NULL); //Get time of day contiene 2 parámetros, un parámetro es un puntero tipo estructura donde guarda la hora actual y el otro parámetro es la zona horaria
+            //Guarda la hora actual en medida en segundos y microsegundos
 
                    
             fgets(scan, 256, punteroFichero); //Para quitar header          
@@ -171,7 +172,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }    
 
             mvwprintw(Wfichero, 3, 20, "%d", contador);
-            mvwprintw(Wfichero, 3, 58, "%d", descartes);
+            mvwprintw(Wfichero, 3, 55, "%d", descartes);
 
             touchwin(Wfichero);
             wrefresh(Wfichero);
@@ -183,7 +184,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }
 
             fclose (punteroFichero); //Cierro el fichero
-            final = clock();
+            gettimeofday(&final, NULL);
             //tim = gettimeofday(inicio, final);
             //Estadisticas.TiempoCarga = tim;
             VentanaError("Documento leido");    
@@ -231,7 +232,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
             strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
             
-            //inicio = clock();
+            gettimeofday(&inicio, NULL);
 
                    
             fgets(scan, 256, punteroFichero); //Para quitar header          
@@ -332,7 +333,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }    
 
             mvwprintw(Wfichero, 3, 20, "%d", contador);
-            mvwprintw(Wfichero, 3, 58, "%d", descartes);
+            mvwprintw(Wfichero, 3, 55, "%d", descartes);
 
             touchwin(Wfichero);
             wrefresh(Wfichero);
@@ -344,7 +345,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }
 
             fclose (punteroFichero); //Cierro el fichero
-            final = clock();
+            gettimeofday(&final, NULL);
             //tim = gettimeofday(inicio, final);
             //Estadisticas.TiempoCarga = tim;
             VentanaError("Documento leido en sumar fichero");
@@ -361,7 +362,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     //Actualizar datos de Estadísticas
     Estadisticas.MaxFichas = Estadisticas.MaxFichas + tratados + descartes;
     Estadisticas.NumeroFichas = Estadisticas.NumeroFichas + tratados;
-    Estadisticas.TiempoCarga = tim;
+    Estadisticas.TiempoCarga = DifTiempo(inicio, final);
 
     return;
 
