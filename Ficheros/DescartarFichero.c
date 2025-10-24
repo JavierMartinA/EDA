@@ -39,8 +39,16 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
             }
             free(*Fichas); // Liberamos el array completo de estructuras DISCO
             *Fichas = NULL; //Inicializamos el array de estructuras de DISCOS a NULL 
-            Estadisticas.NumeroFichas = 0; //Actualizamos las estadísticas
+             Estadisticas.NumeroFichas = 0; //Reseteamos las estadísticas
             Estadisticas.MaxFichas = 0;
+            Estadisticas.TiempoCarga = 0;
+            Estadisticas.TiempoSeleccion = 0;
+            Estadisticas.TiempoBurbuja = 0;
+            Estadisticas.TiempoInsercion = 0;
+            Estadisticas.TiempoQuicksort = 0;
+            Estadisticas.TiempoBusquedaSecuencial = 0;
+            Estadisticas.TiempoBusquedaBinaria = 0;
+            Estadisticas.TiempoBusquedaArbol = 0;
             VentanaError("La eliminacion se llevo acabo correctamente"); //Confirmación de eliminación
         }
     }
