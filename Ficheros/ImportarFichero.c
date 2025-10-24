@@ -15,32 +15,23 @@
 
 void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 {
-   
-    #include "Ficheros.h"
+    #define TAM_LINEA 100
 
-    char nombreFicheros[50];
+    // Código del alumno
+    char nombreFicheros[250];
 
-    FILE *punteroFichero;
+    FILE *punteroFichero; //Declaro puntero tipo FILE para cuando abra el fichero
 
-    long inicio;
-    long final;
-    int tim;
+    struct timeval inicio;
+    struct timeval final;
+    
 
-    char scan[200];
-    char obra[50];
-    char apellidos[50];
-    char nombre[50];
-    char tonalidad[50];
-    char opus[50];
-    char duracion[50];
+    char scan[256];
 
     int contador = 0;
-    int numValor;
     int descartes = 0;
     int tratados = 0;
 
-
-    // Código del alumno
     if (!sumar) //No debería haber discos
     {
         if (Estadisticas.NumeroFichas == 0) //Comprobación de 0 discos
@@ -48,84 +39,155 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             touchwin(Wfichero);
             wrefresh(Wfichero);
 
-            wscanw(Wfichero,"%s",&nombreFicheros);
-            mvwscanw(Wfichero, 3, 20,"%s",&nombreFicheros);
+            //La mayoría de este código ha sido basado en el código de NuevoDisco.c
 
-            fopen(nombreFicheros, "r"); //Cabecera en línea 0
-
-            if (punteroFichero == NULL)
+            //Guardo memoria para la primera tanda de discos
+            if ((*Fichas=realloc(*Fichas,sizeof(DISCO)*(Estadisticas.MaxFichas+100))) == NULL)
             {
-                VentanaError("No se ha encontrado el fichero");
+                VentanaError("No hay suficiente espacio");
                 return;
             }
 
-            
-            inicio = clock();
-            fscanf(punteroFichero, "%s; %s; %s;%s;%s;%s"); //Para quitar header
+            Estadisticas.MaxFichas +=100;
 
-            while (fscanf(punteroFichero, "%s; %s; %s;%s;%s;%s"), &obra, &apellidos, &nombre, &tonalidad, &opus, &duracion)
+            //Permito al usuario escribir el nombre del csv
+            wattroff(Wfichero, A_ALTCHARSET);
+            echo();
+            curs_set(1);
+            mvwgetnstr(Wfichero,2,25,nombreFicheros, 250); //Recojo el nombre
+            curs_set(0);
+            noecho();
+
+
+            punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
+
+            if (punteroFichero == NULL) //Compruebo que el nombre del fichero sea correcto
             {
-                contador++;
-
+                VentanaError("No se ha encontrado el fichero");
+                return; //Si no es correcto, cierro la función de ImportarFichero.c y vuelvo al menú principal
             }
-            Fichas = realloc(Fichas, (contador + 1) * sizeof(DISCO *));
-            fscanf(punteroFichero, "%s"); //Para quitar header
+            
+            Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
+            strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
+            
+            gettimeofday(&inicio, NULL); //Get time of day contiene 2 parámetros, un parámetro es un puntero tipo estructura donde guarda la hora actual y el otro parámetro es la zona horaria
+            //Guarda la hora actual en medida en segundos y microsegundos
 
-            while (fscanf(punteroFichero, "%s", &scan) != NULL) //Para leer todas las líneas
+                   
+            fgets(scan, 256, punteroFichero); //Para quitar header          
+
+            
+            //Empiezo a leer las líneas que contienen los discos 
+            while (fgets(scan, TAM_LINEA, punteroFichero) != NULL)
             {
-                Fichas[contador] = malloc(sizeof(DISCO));
-                contador++;
+                // Si no hay espacio para un nuevo disco se reasigna más espacio al array de discos
+                if (Estadisticas.NumeroFichas == Estadisticas.MaxFichas) {
+                    if ((*Fichas=realloc(*Fichas,sizeof(DISCO)*(Estadisticas.MaxFichas+100))) == NULL) {
 
-                while(scan != NULL) //Para leer cada valor de cada línea
+                        VentanaError("No hay suficiente espacio");
+                        return; //Si no hay espacio cierro la función y vuelvo al menú
+                    }
+                    Estadisticas.MaxFichas+=100; //Aumento el número máximo de fichas que tengo + 100
+                }
+                
+
+                char *punteroScan = scan; //Creo puntero que apunte a la línea leída por fgets
+                char *valor; //Puntero para recibir cada string de la función strsep
+                char palabra[100]; //String para guardar lo que tenga valor y pasarselo a parte de la estructura de disco correspondiente
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de obra de cada línea
+
+                // Si no hay valor o está vacío
+                if (valor == NULL || valor[0] == '\0') //Elimino el disco y voy a la siguiente iteración
                 {
-                    char * punteroScan = scan;
-                    char * valor;
-                    char *valores[6];
-
-                    while ((valor = strsep(punteroScan, ";")) != NULL) //Guardar todos los valores
-                    {
-                        valores[numValor] = valor; //Guardar valor en el array
-                        numValor++; //Siguiente espacio en el array
-                    }
-
-                    if (valores[0] == NULL || valores[1] == NULL) //Si obra o apellidos no están descarto la ficha
-                    {
-                        descartes++;
-                        return;
-                    }
-
-                    Fichas[contador]->Obra = valores[0];
-                    Fichas[contador]->ApellAutor = valores[1];
-                    Fichas[contador]->NomAutor = valores[2];
-                    Fichas[contador]->Tonalidad = valores[3];
-                    Fichas[contador]->Opus = valores[4];
-                    Fichas[contador]->Duracion = valores[5];
-
-                    
-                    
-
-
-                    
+                    //VentanaError("Nombre de la obra en blanco, se eliminara este disco");
+                    descartes++;
+                    continue;
                 }
 
+                strcpy(palabra, valor); //Paso a palabra el valor al que apunta valor, en este caso el nombre de la obra
 
+                (*Fichas)[Estadisticas.NumeroFichas].Obra = malloc(strlen(palabra) + 1); //Reservo espacio para el nombre de la obra en el puntero de disco .Obra
+                strcpy((*Fichas)[Estadisticas.NumeroFichas].Obra, palabra); //Paso el valor de palabra a obra
+                palabra[0] = 0; //Limpiar palabra
 
+            
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de apellidos del autor de cada línea
                 
-            }
+                if (valor == NULL || valor[0] == '\0')
+                {
+                    //VentanaError("Apellidos del autor en blanco, se eliminara este disco");
+                    free((*Fichas)[Estadisticas.NumeroFichas].Obra);
+                    descartes ++;
+                    continue;
+                }
+
+                strcpy(palabra, valor);       
+                (*Fichas)[Estadisticas.NumeroFichas].ApellAutor=malloc(strlen(palabra)+1);
+                strcpy((*Fichas)[Estadisticas.NumeroFichas].ApellAutor,palabra);
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de nombre del autor para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0) //Si valor apunta a un valor vacío, palabra también estará vacío y pondrá el nombre de autor como nulo
+                    (*Fichas)[Estadisticas.NumeroFichas].NomAutor=NULL;
+                else { //Si valor no está vacío, reservo espacio para el puntero de nombre autor del disco y le copio el contenido de palabra
+                    (*Fichas)[Estadisticas.NumeroFichas].NomAutor=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].NomAutor,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de tonalidad de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Tonalidad=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Tonalidad=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Tonalidad,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";");//Coger el valor de opus de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Opus=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Opus=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Opus,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de duración de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Duracion=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Duracion=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Duracion,palabra);
+                }
+
+                contador++; //Aumento contador solo para comprobar que el file tenga más que solo cabecera
+                Estadisticas.NumeroFichas++; //Aumento el número de fichas que tengo, para que en la siguiente iteración se utilice la siguiente estructura de disco en la superestructura (array de discos)
+            }    
+
+            mvwprintw(Wfichero, 3, 20, "%d", contador);
+            mvwprintw(Wfichero, 3, 55, "%d", descartes);
+
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
 
             if (contador == 0)
             {
-                VentanaError("No contiene discos");
+                VentanaError("El fichero solo tiene cabecera");
                 return;
             }
 
-
-            
-
-
-            
-
-
+            fclose (punteroFichero); //Cierro el fichero
+            gettimeofday(&final, NULL);
+            //tim = gettimeofday(inicio, final);
+            //Estadisticas.TiempoCarga = tim;
+            VentanaError("Documento leido");    
         }
 
         else
@@ -137,17 +199,171 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
         
     }
 
-    else
+    else //Para añadir las fichas de un fichero a la lista de discos existentes
     {
         if(Estadisticas.NumeroFichas > 0 || Estadisticas.NumeroFichas < 0) //Comprobación de que hay discos
         {
+        
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
 
+            //La mayoría de este código ha sido basado en el código de NuevoDisco.c
+
+            //Esta vez no pido memoria de inicio para la tanda de discos, ya que ya debería de haber declarado otros discos antes
+            //Aunque no hubiera suficiente, la pediré cuando entre al while
+
+            //Permito al usuario escribir el nombre del csv
+            wattroff(Wfichero, A_ALTCHARSET);
+            echo();
+            curs_set(1);
+            mvwgetnstr(Wfichero,2,25,nombreFicheros, 250); //Recojo el nombre
+            curs_set(0);
+            noecho();
+
+
+            punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
+
+            if (punteroFichero == NULL) //Compruebo que el nombre del fichero sea correcto
+            {
+                VentanaError("No se ha encontrado el fichero");
+                return; //Si no es correcto, cierro la función de ImportarFichero.c y vuelvo al menú principal
+            }
+
+            Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
+            strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
+            
+            gettimeofday(&inicio, NULL);
+
+                   
+            fgets(scan, 256, punteroFichero); //Para quitar header          
+
+            
+            //Empiezo a leer las líneas que contienen los discos 
+            while (fgets(scan, TAM_LINEA, punteroFichero) != NULL)
+            {
+                // Si no hay espacio para un nuevo disco se reasigna más espacio al array de discos
+                if (Estadisticas.NumeroFichas == Estadisticas.MaxFichas) {
+                    if ((*Fichas=realloc(*Fichas,(sizeof(DISCO)*(Estadisticas.MaxFichas+100))+Estadisticas.MaxFichas)) == NULL) {
+
+                        VentanaError("No hay suficiente espacio");
+                        return; //Si no hay espacio cierro la función y vuelvo al menú
+                    }
+                    Estadisticas.MaxFichas+=100; //Aumento el número máximo de fichas que tengo + 100
+                }
+                
+
+                char *punteroScan = scan; //Creo puntero que apunte a la línea leída por fgets
+                char *valor; //Puntero para recibir cada string de la función strsep
+                char palabra[100]; //String para guardar lo que tenga valor y pasarselo a parte de la estructura de disco correspondiente
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de obra de cada línea
+
+                // Si no hay valor o está vacío
+                if (valor == NULL || valor[0] == '\0') //Elimino el disco y voy a la siguiente iteración
+                {
+                    //VentanaError("Nombre de la obra en blanco, se eliminara este disco");
+                    descartes++;
+                    continue;
+                }
+
+                strcpy(palabra, valor); //Paso a palabra el valor al que apunta valor, en este caso el nombre de la obra
+
+                (*Fichas)[Estadisticas.NumeroFichas].Obra = malloc(strlen(palabra) + 1); //Reservo espacio para el nombre de la obra en el puntero de disco .Obra
+                strcpy((*Fichas)[Estadisticas.NumeroFichas].Obra, palabra); //Paso el valor de palabra a obra
+                palabra[0] = 0; //Limpiar palabra
+
+            
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de apellidos del autor de cada línea
+                
+                if (valor == NULL || valor[0] == '\0')
+                {
+                    //VentanaError("Apellidos del autor en blanco, se eliminara este disco");
+                    free((*Fichas)[Estadisticas.NumeroFichas].Obra);
+                    descartes ++;
+                    continue;
+                }
+
+                strcpy(palabra, valor);       
+                (*Fichas)[Estadisticas.NumeroFichas].ApellAutor=malloc(strlen(palabra)+1);
+                strcpy((*Fichas)[Estadisticas.NumeroFichas].ApellAutor,palabra);
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de nombre del autor para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0) //Si valor apunta a un valor vacío, palabra también estará vacío y pondrá el nombre de autor como nulo
+                    (*Fichas)[Estadisticas.NumeroFichas].NomAutor=NULL;
+                else { //Si valor no está vacío, reservo espacio para el puntero de nombre autor del disco y le copio el contenido de palabra
+                    (*Fichas)[Estadisticas.NumeroFichas].NomAutor=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].NomAutor,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de tonalidad de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Tonalidad=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Tonalidad=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Tonalidad,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";");//Coger el valor de opus de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Opus=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Opus=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Opus,palabra);
+                }
+                palabra[0]=0;
+
+                valor = strsep(&punteroScan, ";"); //Coger el valor de duración de la obra para cada línea
+                strcpy(palabra, valor);
+                if (strlen(palabra) == 0)
+                    (*Fichas)[Estadisticas.NumeroFichas].Duracion=NULL;
+                else {
+                    (*Fichas)[Estadisticas.NumeroFichas].Duracion=malloc(strlen(palabra)+1);
+                    strcpy((*Fichas)[Estadisticas.NumeroFichas].Duracion,palabra);
+                }
+
+                contador++; //Aumento contador solo para comprobar que el file tenga más que solo cabecera
+                Estadisticas.NumeroFichas++; //Aumento el número de fichas que tengo, para que en la siguiente iteración se utilice la siguiente estructura de disco en la superestructura (array de discos)
+            }    
+
+            mvwprintw(Wfichero, 3, 20, "%d", contador);
+            mvwprintw(Wfichero, 3, 55, "%d", descartes);
+
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
+
+            if (contador == 0)
+            {
+                VentanaError("El fichero solo tiene cabecera");
+                return;
+            }
+
+            fclose (punteroFichero); //Cierro el fichero
+            gettimeofday(&final, NULL);
+            //tim = gettimeofday(inicio, final);
+            //Estadisticas.TiempoCarga = tim;
+            VentanaError("Documento leido en sumar fichero");
         }
 
         else
         {
             VentanaError("No hay fichas de discos");
+            return;
         }
     }
+
+    
+    //Actualizar datos de Estadísticas
+    Estadisticas.MaxFichas = Estadisticas.MaxFichas + tratados + descartes;
+    Estadisticas.NumeroFichas = Estadisticas.NumeroFichas + tratados;
+    Estadisticas.TiempoCarga = DifTiempo(inicio, final);
+
+    return;
 
 }

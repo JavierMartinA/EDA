@@ -45,7 +45,7 @@ void DibujarGestionFichero(WINDOW *Wfichero)
     //Escribo las opciones
     mvwprintw(Wfichero,2,2," Nombre del fichero:                                                     ");
     mvwprintw(Wfichero,3,2," Fichas tratadas:                          ");
-    mvwprintw(Wfichero,3,40,"Fichas descartadas:                ");
+    mvwprintw(Wfichero,3,35,"Fichas descartadas:                ");
 
     return;
 }
