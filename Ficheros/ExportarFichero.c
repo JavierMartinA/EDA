@@ -18,6 +18,13 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     char nombreFicheros[50];//cadena de caracteres para los diferentes campos de cada disco
     FILE *punteroFichero = NULL; 
 
+    char obra[50];
+    char apellidos[50];
+    char nombre[50];
+    char tonalidad[50];
+    char opus[50];
+    char duracion[50];
+
     int contador = 0; // contador para las fichas exportadas
 
     //condicional para mostrar error en caso que no haya ficheros por exportar
@@ -33,7 +40,7 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     // Mover cursor a la posición de entrada, y capturar entrada
     echo(); // Habilita el eco
     curs_set(1);
-    mvwgetnstr(Wfichero, 2,25, nombreFicheros, 250);
+    mvwgetnstr(Wfichero, 2,25, nombreFicheros, 50);
     curs_set(0);
     noecho(); // Deshabilita el eco
     wrefresh(Wfichero);
@@ -62,20 +69,67 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     
     // 5. Para cada disco en la estructura de discos:
     int i = 0;
-    while (Fichas[i] != NULL) 
-    {
+    while (i < Estadisticas.NumeroFichas) 
+    { 
+
+        //Copio los valores a un string para evitar excepciones a la hora de escribir en  la exportación
+        //Como Obra y apellidos no pueden ser nulos, no hago la comprobación
+        strcpy(obra, (*Fichas)[i].Obra);
+        strcpy(apellidos, (*Fichas)[i].ApellAutor);
         
-        DISCO *disco_actual = malloc(sizeof(DISCO));
-        *disco_actual = (*Fichas)[i];
+        //Si el campo del nombre del autor es nulo, le copio al string un texto sin nada para evitar excepciones
+        //Nombre del autor
+        if ((*Fichas)[i].NomAutor == NULL)
+        {
+            strcpy(nombre, "");
+        }
+
+        else
+        {
+            strcpy(nombre, (*Fichas)[i].NomAutor);
+        }
+
+        //Tonalidad
+        if ((*Fichas)[i].Tonalidad == NULL)
+        {
+            strcpy(tonalidad, "");
+        }
+
+        else
+        {
+            strcpy(tonalidad, (*Fichas)[i].Tonalidad);
+        }
+
+        //Opus
+        if ((*Fichas)[i].Opus == NULL)
+        {
+            strcpy(opus, "");
+        }
+
+        else
+        {
+            strcpy(opus, (*Fichas)[i].Opus);
+        }
+
+        //Duración
+        if ((*Fichas)[i].Duracion == NULL)
+        {
+            strcpy(duracion, "");
+        }
+
+        else
+        {
+            strcpy(duracion, (*Fichas)[i].Duracion);
+        }
 
         // Escribir una línea con los datos del disco separados por ';'.
         fprintf(punteroFichero, "%s;%s;%s;%s;%s;%s\n",
-                disco_actual->Obra,
-                disco_actual->ApellAutor,
-                disco_actual->NomAutor,
-                disco_actual->Tonalidad,
-                disco_actual->Opus,
-                disco_actual->Duracion);
+                obra,
+                apellidos,
+                nombre,
+                tonalidad,
+                opus,
+                duracion);
 
         contador++; // Contar discos exportados
         i++;
