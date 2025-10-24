@@ -17,11 +17,6 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     //Variables locales
     char nombreFicheros[50];//cadena de caracteres para los diferentes campos de cada disco
     FILE *punteroFichero = NULL; 
-    
-    //variables de tiempo
-    long inicio;
-    long final;
-    int tim;
 
     int contador = 0; // contador para las fichas exportadas
 
@@ -35,17 +30,16 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     touchwin(Wfichero);
     wrefresh(Wfichero);
 
-    // Prompt en la ventana preguntando el nombre del fichero
-    mvwprintw(Wfichero, 3, 2, "Fichero a exportar (ej: export.csv): ");
-    
-    // Mover cursor a la posición de entrada, limpiar línea y capturar entrada
-    int x_entrada = 37; // Ajuste de columna
-    wmove(Wfichero, 3, x_entrada); 
-    wclrtoeol(Wfichero); 
+    // Mover cursor a la posición de entrada, y capturar entrada
     echo(); // Habilita el eco
-    wgetnstr(Wfichero, nombreFicheros, sizeof(nombreFicheros) - 1);
+    curs_set(1);
+    mvwgetnstr(Wfichero, 2,25, nombreFicheros, 250);
+    curs_set(0);
     noecho(); // Deshabilita el eco
     wrefresh(Wfichero);
+
+    
+    
     
     // Controlar si se introdujo un nombre válido
     if (nombreFicheros[0] == '\0') {
@@ -61,7 +55,6 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
         return;
     }
     
-    inicio = clock(); // Iniciar medición de tiempo
 
     // 4. Escribir la cabecera en el fichero.
     // La cabecera coincide con el formato de campos de su importación.
@@ -71,7 +64,9 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     int i = 0;
     while (Fichas[i] != NULL) 
     {
-        DISCO *disco_actual = Fichas[i];
+        
+        DISCO *disco_actual = malloc(sizeof(DISCO));
+        *disco_actual = (*Fichas)[i];
 
         // Escribir una línea con los datos del disco separados por ';'.
         fprintf(punteroFichero, "%s;%s;%s;%s;%s;%s\n",
@@ -89,15 +84,11 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     // 6. Cerrar el fichero
     fclose(punteroFichero);
 
-    final = clock(); // Finalizar medición de tiempo
-    tim = (int)(final - inicio) * 1000 / CLOCKS_PER_SEC; // Cálculo del tiempo (ms)
 
     // 7. Mostrar el número de discos exportados.
-    char msg[100];
-    snprintf(msg, sizeof(msg), "Exportación finalizada. Se exportaron %d fichas en %d ms.", contador, tim);
-    VentanaError(msg); 
-
+    mvwprintw(Wfichero, 3, 20, "%d", contador);
+    touchwin(Wfichero);
+    wrefresh(Wfichero);
     // 8. Informar que los discos se han exportado correctamente.
-    snprintf(msg, sizeof(msg), "Datos guardados correctamente en: %s", nombreFicheros);
-    VentanaError(msg); 
+    VentanaError("Datos guardados correctamente"); 
 }
