@@ -15,18 +15,20 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
 {
     
     // Código del alumno
-    char Tecla;
+    
+    char Tecla; //Variable para la confirmación del ususarios
 
+    //Comprobamos si existen discos cargados
     if(*Fichas == NULL)
     {
-        VentanaError("No hay fichas de disco para descartar");
+        VentanaError("No hay fichas de disco para descartar"); //Error si no hay discos
     }
     else
     {
-        Tecla=VentanaSN("Esta seguro de querer eliminar los discos? (S/N)?");
+        Tecla=VentanaSN("Esta seguro de querer eliminar los discos? (S/N)?"); //Mensaje de confirmación de eliminación
         if (Tecla == 'S' || Tecla == 's') 
         {
-            for (int j = 0; j < Estadisticas.NumeroFichas; j++)
+            for (int j = 0; j < Estadisticas.NumeroFichas; j++) //Bucle for para liberar el espacio asignado a cada campo de la estructura de DISCOS
             {
                 free((*Fichas)[j].Obra);
                 free((*Fichas)[j].ApellAutor);
@@ -35,11 +37,11 @@ void DescartarFichero(DISCO **Fichas,WINDOW *Wfichero)
                 free((*Fichas)[j].Opus);
                 free((*Fichas)[j].Duracion);
             }
-            Estadisticas.NumeroFichas = 0;    
-            free(*Fichas);
-            *Fichas = NULL;
+            free(*Fichas); // Liberamos el array completo de estructuras DISCO
+            *Fichas = NULL; //Inicializamos el array de estructuras de DISCOS a NULL 
+            Estadisticas.NumeroFichas = 0; //Actualizamos las estadísticas
             Estadisticas.MaxFichas = 0;
-            VentanaError("La eliminacion se llevo acabo correctamente");
+            VentanaError("La eliminacion se llevo acabo correctamente"); //Confirmación de eliminación
         }
     }
     
