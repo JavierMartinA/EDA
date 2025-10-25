@@ -232,7 +232,9 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     {
         if(Estadisticas.NumeroFichas > 0 || Estadisticas.NumeroFichas < 0) //Comprobación de que hay discos
         {
-        
+            //Pongo el título de sumar ficheros en la pantalla
+            int i =(76-strlen("    Sumar fichero de discos    "))/2;
+            mvwprintw(Wfichero,0,i,"    Sumar fichero de discos    ");
             touchwin(Wfichero);
             wrefresh(Wfichero);
 
@@ -406,6 +408,13 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             //tim = gettimeofday(inicio, final);
             //Estadisticas.TiempoCarga = tim;
             VentanaError("Documento leido en sumar fichero");
+
+
+            //Pongo el título de importar ficheros por si el usuario decide eliminar los ficheros y volver a importar
+            mvwprintw(Wfichero,0,i,"   Importar fichero de discos   ");
+            touchwin(Wfichero);
+            wrefresh(Wfichero);
+
         }
 
         else
