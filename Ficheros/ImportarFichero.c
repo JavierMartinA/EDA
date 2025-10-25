@@ -24,6 +24,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
     struct timeval inicio;
     struct timeval final;
+    int lineas = 0;
     
 
     char scan[256];
@@ -79,7 +80,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             
             //Empiezo a leer las líneas que contienen los discos 
             while (fgets(scan, TAM_LINEA, punteroFichero) != NULL)
-            {
+            { 
                 // Si no hay espacio para un nuevo disco se reasigna más espacio al array de discos
                 if (Estadisticas.NumeroFichas == Estadisticas.MaxFichas) {
                     if ((*Fichas=realloc(*Fichas,sizeof(DISCO)*(Estadisticas.MaxFichas+100))) == NULL) {
@@ -89,7 +90,35 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                     }
                     Estadisticas.MaxFichas+=100; //Aumento el número máximo de fichas que tengo + 100
                 }
+
+
+                //El fgets lee 100 bits que es la constante que le hemos puesto, por eso luego crea espacios en negro cuando lo escribo en gestión de discos
+                //Para resolverlo, voy a eliminar desde el final los bits que no contengan ninguna letra
+                // Para ello recorro la cadena desde el final hasta el inicio
+                for (int i = strlen(scan) - 1; i >= 0; i--) {
+                    if (scan[i] == '\n' || scan[i] == '\r') { //Remplazo los carácteres especiales que no son letras por final de línea
+                        scan[i] = '\0';  
+                    } else {
+                        break;  // En cuanto detecto una letra, paro de sobreescribir los bits como final de línea
+                    }
+                }
+            
                 
+
+                //El elemento fgets lee hasta el \0, el problema es que detecta algunos \0 antes de leerse todo el texto de la línea y por ello aumenta el número de líneas leídas y descartadas
+                //Por ello leo cuantos separadores hay en la línea leída y si hay menos de los 5 que debe, lo paso
+                int numeroSeparadores = 0;
+                for (int i = 0; scan[i] != '\0'; i++) //Voy recorriendo la línea de inicio a fin
+                {
+                    if (scan[i] == ';') //Aumento el número de separadores leídos cada vez que me encuentro uno
+                    {
+                        numeroSeparadores++;
+                    }
+                }
+                if (numeroSeparadores < 5) //Entra si hay un salto de línea antes de que se me den los 6 valores
+                {
+                    continue;
+                }
 
                 char *punteroScan = scan; //Creo puntero que apunte a la línea leída por fgets
                 char *valor; //Puntero para recibir cada string de la función strsep
