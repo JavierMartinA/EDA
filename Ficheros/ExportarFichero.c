@@ -15,9 +15,10 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
 {
     // Código del alumno
     //Variables locales
-    char nombreFicheros[50];//cadena de caracteres para los diferentes campos de cada disco
+    char nombreFicheros[50];//cadena de caracteres para el nombre del fichero
     FILE *punteroFichero = NULL; 
 
+    //Variables donde guardaré los valores de cada disco
     char obra[50];
     char apellidos[50];
     char nombre[50];
@@ -38,11 +39,11 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
     wrefresh(Wfichero);
 
     // Mover cursor a la posición de entrada, y capturar entrada
-    echo(); // Habilita el eco
-    curs_set(1);
+    echo(); //Dejo que el usuario vea lo que escribe
+    curs_set(1); //Enseño donde está el cursor
     mvwgetnstr(Wfichero, 2,25, nombreFicheros, 50);
-    curs_set(0);
-    noecho(); // Deshabilita el eco
+    curs_set(0); //Ya no se ve el cursor
+    noecho();  //Ya no se enseña lo que se escribe 
     wrefresh(Wfichero);
 
     
@@ -54,22 +55,22 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
         return;
     }
 
-    // 3. Abrir el fichero en escritura y controlar si ha habido error.
+    //Abro el fichero en escritura
     punteroFichero = fopen(nombreFicheros, "w");
     
+    //Controlo si ha habido algún error
     if (punteroFichero == NULL) {
         VentanaError("ERROR: No se pudo abrir el fichero para escritura.");
         return;
     }
     
 
-    // 4. Escribir la cabecera en el fichero.
-    // La cabecera coincide con el formato de campos de su importación.
+    // Escribo la cabecera en el fichero.
     fprintf(punteroFichero, "Obra;Apellidos;Nombre;Tonalidad;Opus;Duracion\n");
     
-    // 5. Para cada disco en la estructura de discos:
+    // Inicio el loop que escribirá cada disco en el fichero
     int i = 0;
-    while (i < Estadisticas.NumeroFichas) 
+    while (i < Estadisticas.NumeroFichas) //Se reproducirá hasta que haya escrito todas las fichas
     { 
 
         //Copio los valores a un string para evitar excepciones a la hora de escribir en  la exportación
@@ -122,7 +123,7 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
             strcpy(duracion, (*Fichas)[i].Duracion);
         }
 
-        // Escribir una línea con los datos del disco separados por ';'.
+        // Escribo una línea con los datos del disco separados por ';'.
         fprintf(punteroFichero, "%s;%s;%s;%s;%s;%s\n",
                 obra,
                 apellidos,
@@ -135,14 +136,14 @@ void ExportarFichero(DISCO **Fichas,WINDOW *Wfichero)
         i++;
     }
 
-    // 6. Cerrar el fichero
+    // Cierro el fichero
     fclose(punteroFichero);
 
 
-    // 7. Mostrar el número de discos exportados.
+    // Muestro el número de discos exportados.
     mvwprintw(Wfichero, 3, 20, "%d", contador);
     touchwin(Wfichero);
     wrefresh(Wfichero);
-    // 8. Informar que los discos se han exportado correctamente.
+    // Informo que los discos se han exportado correctamente.
     VentanaError("Datos guardados correctamente"); 
 }

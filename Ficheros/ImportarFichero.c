@@ -15,7 +15,7 @@
 
 void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 {
-    #define TAM_LINEA 100
+    #define TAM_LINEA 150
 
     // Código del alumno
     char nombreFicheros[250];
@@ -42,22 +42,13 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             //La mayoría de este código ha sido basado en el código de NuevoDisco.c
 
-            //Guardo memoria para la primera tanda de discos
-            if ((*Fichas=realloc(*Fichas,sizeof(DISCO)*(Estadisticas.MaxFichas+100))) == NULL)
-            {
-                VentanaError("No hay suficiente espacio");
-                return;
-            }
-
-            Estadisticas.MaxFichas +=100;
-
             //Permito al usuario escribir el nombre del csv
             wattroff(Wfichero, A_ALTCHARSET);
-            echo();
-            curs_set(1);
+            echo(); //Permito al usuario ver lo que escribe
+            curs_set(1); //Permite que el usuario vea el cursor
             mvwgetnstr(Wfichero,2,25,nombreFicheros, 250); //Recojo el nombre
-            curs_set(0);
-            noecho();
+            curs_set(0); //El cursor ya no se ve
+            noecho(); //El usuario ya no ve lo que escribe
 
 
             punteroFichero = fopen(nombreFicheros, "r"); //Abro el fichero
@@ -67,6 +58,15 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 VentanaError("No se ha encontrado el fichero");
                 return; //Si no es correcto, cierro la función de ImportarFichero.c y vuelvo al menú principal
             }
+
+            //Guardo memoria para la primera tanda de discos
+            if ((*Fichas=realloc(*Fichas,sizeof(DISCO)*(Estadisticas.MaxFichas+100))) == NULL)
+            {
+                VentanaError("No hay suficiente espacio");
+                return;
+            }
+
+            Estadisticas.MaxFichas +=100;
             
             Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
             strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
@@ -92,14 +92,14 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 }
 
 
-                //El fgets lee 100 bits que es la constante que le hemos puesto, por eso luego crea espacios en negro cuando lo escribo en gestión de discos
-                //Para resolverlo, voy a eliminar desde el final los bits que no contengan ninguna letra
+                //El fgets lee 150 caracteres que es la constante que le hemos puesto, por eso luego crea espacios en negro cuando lo escribo en gestión de discos
+                //Para resolverlo, voy a eliminar desde el final los caracteres que no contengan ninguna letra
                 // Para ello recorro la cadena desde el final hasta el inicio
                 for (int i = strlen(scan) - 1; i >= 0; i--) {
                     if (scan[i] == '\n' || scan[i] == '\r') { //Remplazo los carácteres especiales que no son letras por final de línea
                         scan[i] = '\0';  
                     } else {
-                        break;  // En cuanto detecto una letra, paro de sobreescribir los bits como final de línea
+                        break;  // En cuanto detecto una letra, paro de sobreescribir los caracteres como final de línea
                     }
                 }
             
@@ -129,7 +129,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 // Si no hay valor o está vacío
                 if (valor == NULL || valor[0] == '\0') //Elimino el disco y voy a la siguiente iteración
                 {
-                    //VentanaError("Nombre de la obra en blanco, se eliminara este disco");
+                    //Nombre de la obra en blanco, se eliminara este disco
                     descartes++;
                     continue;
                 }
@@ -146,7 +146,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 
                 if (valor == NULL || valor[0] == '\0')
                 {
-                    //VentanaError("Apellidos del autor en blanco, se eliminara este disco");
+                    //Apellidos del autor en blanco, se eliminara este disco
                     free((*Fichas)[Estadisticas.NumeroFichas].Obra);
                     descartes ++;
                     continue;
@@ -200,6 +200,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 Estadisticas.NumeroFichas++; //Aumento el número de fichas que tengo, para que en la siguiente iteración se utilice la siguiente estructura de disco en la superestructura (array de discos)
             }    
 
+            //Escribo el número de fichas tratadas y descartadas
             mvwprintw(Wfichero, 3, 20, "%d", contador);
             mvwprintw(Wfichero, 3, 55, "%d", descartes);
 
@@ -214,9 +215,9 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             fclose (punteroFichero); //Cierro el fichero
             gettimeofday(&final, NULL);
-            //tim = gettimeofday(inicio, final);
-            //Estadisticas.TiempoCarga = tim;
             VentanaError("Documento leido");    
+
+            Estadisticas.TiempoCarga = DifTiempo(inicio, final); //Paso el tiempo tardado en importar a la estadística global
         }
 
         else
@@ -262,9 +263,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
 
             Estadisticas.Fichero = malloc(strlen(nombreFicheros) + 1); //Reservo memoria para guardar el valor de nombre del fichero en la variable global correspondiente
             strcpy(Estadisticas.Fichero, nombreFicheros);//Copio el nombre del fichero en la variables global
-            
-            gettimeofday(&inicio, NULL);
-
                    
             fgets(scan, 256, punteroFichero); //Para quitar header          
 
@@ -282,14 +280,14 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                     Estadisticas.MaxFichas+=100; //Aumento el número máximo de fichas que tengo + 100
                 }
 
-                //El fgets lee 100 bits que es la constante que le hemos puesto, por eso luego crea espacios en negro cuando lo escribo en gestión de discos
-                //Para resolverlo, voy a eliminar desde el final los bits que no contengan ninguna letra
+                //El fgets lee 150 caracteres es la constante que le hemos puesto, por eso luego crea espacios en negro cuando lo escribo en gestión de discos
+                //Para resolverlo, voy a eliminar desde el final los caracteres que no contengan ninguna letra
                 // Para ello recorro la cadena desde el final hasta el inicio
                 for (int i = strlen(scan) - 1; i >= 0; i--) {
-                    if (scan[i] == '\n' || scan[i] == '\r') { //Remplazo los carácteres especiales que no son letras por final de línea
+                    if (scan[i] == '\n' || scan[i] == '\r') { //Remplazo los caracteres especiales que no son letras por final de línea
                         scan[i] = '\0';  
                     } else {
-                        break;  // En cuanto detecto una letra, paro de sobreescribir los bits como final de línea
+                        break;  // En cuanto detecto una letra, paro de sobreescribir los caracteres como final de línea
                     }
                 }
             
@@ -320,7 +318,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 // Si no hay valor o está vacío
                 if (valor == NULL || valor[0] == '\0') //Elimino el disco y voy a la siguiente iteración
                 {
-                    //VentanaError("Nombre de la obra en blanco, se eliminara este disco");
+                    //Nombre de la obra en blanco, se eliminara este disco
                     descartes++;
                     continue;
                 }
@@ -337,7 +335,7 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
                 
                 if (valor == NULL || valor[0] == '\0')
                 {
-                    //VentanaError("Apellidos del autor en blanco, se eliminara este disco");
+                    //Apellidos del autor en blanco, se eliminara este disco
                     free((*Fichas)[Estadisticas.NumeroFichas].Obra);
                     descartes ++;
                     continue;
@@ -404,9 +402,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
             }
 
             fclose (punteroFichero); //Cierro el fichero
-            gettimeofday(&final, NULL);
-            //tim = gettimeofday(inicio, final);
-            //Estadisticas.TiempoCarga = tim;
             VentanaError("Documento leido en sumar fichero");
 
 
@@ -427,7 +422,6 @@ void ImportarFichero(DISCO **Fichas,WINDOW *Wfichero,bool sumar)
     
     //Actualizar datos de Estadísticas
     Estadisticas.NumeroFichas = Estadisticas.NumeroFichas + tratados;
-    Estadisticas.TiempoCarga = DifTiempo(inicio, final);
 
     return;
 
